@@ -38,6 +38,7 @@ end
 
 Spork.each_run do
   require 'rest-assured'
+  require 'rest-assured/api'
 
   def app
     RestAssured::Application
