@@ -47,7 +47,7 @@ module RestAssured
           d.merge!(:response_headers => params['response_headers']) if params['response_headers']
         end
 
-        @double = Models::Double.create(d) 
+        @double = Models::Double.create(d)
 
         if browser?
           if @double.errors.blank?

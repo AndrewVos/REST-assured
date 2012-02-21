@@ -155,3 +155,11 @@ Then /^I should be asked to confirm delete$/ do
   page.driver.browser.switch_to.alert.accept
 end
 
+Given /^there is a double at the path "([^"]*)" with the required header "([^"]*)" with the value "([^"]*)" and the content "([^"]*)"$/ do |path, header_name, header_value, content|
+  @first = RestAssured::Models::Double.create :fullpath => path, :request_headers_attributes => [{:name => header_name, :value => header_value}], :content => content
+end
+
+When /^I GET "([^"]*)" with the header "([^"]*)" with the value "([^"]*)"$/ do |path, header_name, header_value|
+  header header_name, header_value
+  get path
+end

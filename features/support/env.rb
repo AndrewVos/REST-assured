@@ -14,7 +14,6 @@ Spork.prefork do
   require 'rest-assured/utils/port_explorer'
   require File.dirname(__FILE__) + '/world_helpers'
 
-
   ENV['RACK_ENV'] = 'test'
 
   module RackHeaderHack
@@ -81,4 +80,3 @@ Spork.each_run do
     @t.join if @t.is_a?(Thread)
   end
 end
-

@@ -22,6 +22,7 @@ module RestAssured::Models
     it { should allow_mass_assignment_of(:response_headers) }
 
     it { should have_many(:requests) }
+    it { should have_many(:request_headers) }
 
     it 'creates double with valid params' do
       d = Double.new valid_params
@@ -41,6 +42,25 @@ module RestAssured::Models
     it "makes double active by default" do
       f = Double.create valid_params.except(:active)
       f.active.should be true
+    end
+
+    it "allows nested attributes for request_headers" do
+      f = Double.create valid_params.merge({
+        :request_headers_attributes => [
+          {:name => "X-Bla-Bla1", :value => "blablabla1"},
+          {:name => "X-Bla-Bla2", :value => "blablabla2"}
+        ]
+      })
+
+      f.reload
+
+      f.request_headers.size.should == 2
+
+      f.request_headers[0].name.should == "X-Bla-Bla1"
+      f.request_headers[0].value.should == "blablabla1"
+
+      f.request_headers[1].name.should == "X-Bla-Bla2"
+      f.request_headers[1].value.should == "blablabla2"
     end
 
     describe 'when created' do

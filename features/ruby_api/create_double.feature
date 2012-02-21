@@ -74,3 +74,16 @@ Feature: create double
     get @double.fullpath
     last_response.status == 302
     """
+
+  Scenario: specify request headers
+    When I create a double:
+    """
+    @double = RestAssured::Double.create :fullpath => "/hello", :request_headers => [{:name => "header name", :value => "header value"}]
+    """
+    Then the following should be true:
+    """
+    @double.request_headers.size == 2
+
+    get @double.fullpath
+    last_response.status.should == 200
+    """

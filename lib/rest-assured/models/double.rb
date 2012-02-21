@@ -3,7 +3,7 @@ require 'net/http'
 module RestAssured
   module Models
     class Double < ActiveRecord::Base
-      attr_accessible :fullpath, :content, :description, :verb, :status, :response_headers
+      attr_accessible :fullpath, :content, :description, :verb, :status, :response_headers, :request_headers_attributes
 
       serialize :response_headers, Hash
 
@@ -20,6 +20,9 @@ module RestAssured
       after_destroy :set_active
 
       has_many :requests, :dependent => :destroy
+      has_many :request_headers
+
+      accepts_nested_attributes_for :request_headers
 
       private
 

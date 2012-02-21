@@ -55,3 +55,10 @@ Feature: use doubles via api
     Given there are some doubles
     When I delete all doubles
     Then there should be no doubles
+
+  Scenario: create double with required headers
+    Given there is a double at the path "/hello" with the required header "X-Bla" with the value "Artem loves Vodka" and the content "VODKA!"
+    And there is a double at the path "/hello" with the required header "X-Bla" with the value "Andrew loves Beer" and the content "BEER!"
+    And there is a double at the path "/hello" with the required header "X-Bla" with the value "Aidy loves cigarettes" and the content "CIGARETTES!"
+    When I GET "/hello" with the header "X-Bla" with the value "Andrew loves Beer"
+    Then I should get "BEER!" in response content

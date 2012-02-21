@@ -54,13 +54,17 @@ module RestAssured
 
       it 'records request' do
         requests = double
-        Models::Double.stub_chain('where.first').and_return(double(:requests => requests).as_null_object)
+        d = double.as_null_object
+        d.stub!(:active).and_return true
+        d.stub!(:requests).and_return requests
+
+        Models::Double.stub!(:where).and_return [d]
 
         requests.should_receive(:create!).with(:rack_env => 'env', :body => 'body', :params => 'params')
 
         Response.perform(rest_assured_app)
       end
-    
+
       it "returns double when redirect matches double" do
         fullpath = '/some/other/path'
         request.stub(:fullpath).and_return(fullpath)
@@ -71,6 +75,27 @@ module RestAssured
         rest_assured_app.should_receive(:headers).with(@double.response_headers)
 
         Response.perform(rest_assured_app)
+      end
+
+      context "when double has request headers" do
+        it "returns the correct double" do
+          request.stub(:fullpath).and_return("/meh")
+          rest_assured_app.stub(:env).and_return({
+            "HTTP_NAME2" => "value2"
+          })
+
+          1.upto(3) do |number|
+            Models::Double.create(
+              :fullpath                   => "/meh",
+              :content                    => "content#{number.to_s}",
+              :request_headers_attributes => [{:name => "name#{number}", :value => "value#{number}"}]
+            )
+          end
+
+          rest_assured_app.should_receive(:body).with("content2")
+
+          Response.perform(rest_assured_app)
+        end
       end
 
     end
@@ -96,7 +121,9 @@ module RestAssured
     # TODO change to instead exclude anything that does not respond_to?(:to_s)
     it 'excludes "rack.input" and "rack.errors" as they break with "IOError - not opened for reading:" on consequent #to_json (as they are IO and StringIO)' do
       requests = double.as_null_object
-      Models::Double.stub_chain('where.first').and_return(double(:requests => requests).as_null_object)
+      d = double.as_null_object
+
+      Models::Double.stub(:where).and_return [d]
 
       env.should_receive(:except).with('rack.input', 'rack.errors', 'rack.logger')
 

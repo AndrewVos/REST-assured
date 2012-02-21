@@ -3,8 +3,17 @@ module RestAssured
 
     def self.perform(app)
       request = app.request
-      if d = Models::Double.where(:fullpath => request.fullpath, :active => true, :verb => request.request_method).first
-        return_double app, d
+
+      matching_doubles = Models::Double.where(:fullpath => request.fullpath, :verb => request.request_method)
+
+      if matching_doubles.any?
+        doubles_with_request_headers = matching_doubles.select {|m| m.request_headers.any?}
+
+        if d = find_double_that_matches_request(app, doubles_with_request_headers)
+          return_double app, d
+        else
+          return_double app, matching_doubles.find {|m| m.active}
+        end
       elsif redirect_url = Models::Redirect.find_redirect_url_for(request.fullpath)
         if d = Models::Double.where(:fullpath => redirect_url, :active => true, :verb => request.request_method).first
           return_double app, d
@@ -13,6 +22,15 @@ module RestAssured
         end
       else
         app.status 404
+      end
+    end
+
+    def self.find_double_that_matches_request app, doubles
+      doubles.find do |double|
+        result = double.request_headers.all? { |h|
+          expected_header_name = "HTTP_#{h.name.gsub("-", "_").upcase}"
+          app.env[expected_header_name] == h.value
+        }
       end
     end
 
